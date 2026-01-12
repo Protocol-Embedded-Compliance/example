@@ -4,8 +4,7 @@
   "description": "Protocol-Embedded Compliance (PEC) example using Mastra",
   "private": true,
   "scripts": {
-    "start": "pnpm --filter ai-agent start",
-    "start:server": "pnpm --filter mcp-server start"
+    "start": "pnpm --filter ai-agent start"
   },
   "keywords": ["pec", "mastra", "mcp", "eu-ai-act", "compliance"],
   "author": "Lloyd Jones",
