@@ -1,0 +1,13 @@
+{
+  "name": "pec-example",
+  "version": "1.0.0",
+  "description": "Protocol-Embedded Compliance (PEC) example using Mastra",
+  "private": true,
+  "scripts": {
+    "start": "pnpm --filter ai-agent start",
+    "start:server": "pnpm --filter mcp-server start"
+  },
+  "keywords": ["pec", "mastra", "mcp", "eu-ai-act", "compliance"],
+  "author": "Lloyd Jones",
+  "license": "MIT"
+}
