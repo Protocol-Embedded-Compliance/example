@@ -13,7 +13,15 @@ A working demonstration of PEC — a standardised schema for compliance metadata
 **What this demo shows:**
 - 6 mock third-party MCP servers (in-memory) from different vendors/jurisdictions
 - 1 real MCP server connected via stdio with dynamically discovered tools
-- All using the same PEC schema, filtered by one implementation
+- All using the same PEC schema, filtered using `@protocol-embedded-compliance/mastra`
+
+## Dependencies
+
+This demo uses the [`@protocol-embedded-compliance/mastra`](https://www.npmjs.com/package/@protocol-embedded-compliance/mastra) package which provides:
+- `PecMCPClient` — MCPClient wrapper with PEC filtering
+- `filterCompliantTools()` — Compliance filtering function
+- `euGeneralContext`, `usHealthcareContext` — Preset deployment contexts
+- Type definitions for PEC schema
 
 ## Key Concepts
 
@@ -86,7 +94,7 @@ const description = `Tool description here.
 [PEC_COMPLIANCE:{"pec_version":"1.0","processing_locations":["DE","IE"],...}]`
 ```
 
-The AI agent's MCP client parses this suffix when discovering tools via the MCP protocol.
+The `PecMCPClient` from `@protocol-embedded-compliance/mastra` parses this suffix when discovering tools.
 
 ## Running the Demo
 
@@ -115,13 +123,9 @@ pec-example/
 │   │   ├── tools.ts            # Tool definitions with PEC metadata
 │   │   └── pec-types.ts        # PEC type definitions
 │   └── package.json
-└── ai-agent/                    # Demo: filtering tools from multiple servers
+└── ai-agent/                    # Demo: filtering tools using @protocol-embedded-compliance/mastra
     ├── src/
     │   ├── index.ts            # Demo entry point
-    │   ├── mcp-client.ts       # MCP client + PEC metadata parser
-    │   ├── pec-types.ts        # PEC type definitions
-    │   ├── deployment-context.ts # Example deployment contexts
-    │   ├── compliance-filter.ts # PEC compliance filtering logic
     │   ├── third-party-servers.ts # Mock third-party MCP servers
     │   └── audit-logger.ts     # Structured audit logging
     └── package.json
@@ -138,12 +142,9 @@ pec-example/
 
 | File | Purpose |
 |------|---------|
-| `ai-agent/src/index.ts` | Demo entry point, orchestrates mock + real MCP filtering |
-| `ai-agent/src/mcp-client.ts` | Connects to MCP server via stdio, parses PEC metadata from descriptions |
-| `ai-agent/src/pec-types.ts` | PEC schema definitions |
-| `ai-agent/src/deployment-context.ts` | Example deployment contexts (EU, US Healthcare) |
-| `ai-agent/src/compliance-filter.ts` | Filtering logic (location, risk, GDPR checks) |
+| `ai-agent/src/index.ts` | Demo entry point, uses `PecMCPClient` from `@protocol-embedded-compliance/mastra` |
 | `ai-agent/src/third-party-servers.ts` | Mock servers showing interoperability |
+| `ai-agent/src/audit-logger.ts` | Structured audit logging |
 | `mcp-server/src/index.ts` | Real MCP server exposing tools with PEC metadata |
 | `mcp-server/src/tools.ts` | How to declare PEC metadata on MCP tools |
 
@@ -156,7 +157,7 @@ The demo shows tools from different sources:
 | Server | Vendor | Location | EU Result | US Healthcare Result |
 |--------|--------|----------|-----------|----------------------|
 | acme-translation-server | Acme (Dublin) | IE, FR | ✓ Compliant | ✗ Rejected |
-| globalpay-mcp-server | GlobalPay (SF) | US, SG | ✗ Rejected | ✗ Rejected |
+| globalpay-mcp-server | GlobalPay (SF) | US, SG | ✗ Rejected | ✓ Compliant |
 | swissvault-mcp-server | SwissVault (Zurich) | CH | ✓ Compliant | ✗ Rejected |
 | tokyoai-mcp-server | Tokyo AI Labs | JP | ✓ Compliant | ✗ Rejected |
 | beijingcloud-mcp-server | Beijing Cloud | CN | ✗ Rejected | ✗ Rejected |
@@ -177,6 +178,7 @@ The demo shows tools from different sources:
 ## References
 
 - [Protocol-Embedded Compliance Website](https://usepec.eu)
+- [@protocol-embedded-compliance/mastra](https://www.npmjs.com/package/@protocol-embedded-compliance/mastra) — NPM package
 - [Mastra Documentation](https://mastra.ai/docs)
 - [MCP Specification](https://modelcontextprotocol.io/)
 - [EU AI Act](https://eur-lex.europa.eu/eli/reg/2024/1689)
