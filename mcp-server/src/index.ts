@@ -45,7 +45,7 @@ const documentSummariserMcp = createTool({
     original_length: z.number(),
     summary_length: z.number()
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context }: { context: { text: string } }) => {
     const result = await documentSummariser.execute(context as Record<string, unknown>)
     return result as { success: boolean; summary: string; original_length: number; summary_length: number }
   }
@@ -63,7 +63,7 @@ const textFormatterMcp = createTool({
     formatted_text: z.string(),
     format_applied: z.string()
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context }: { context: { text: string; format?: string } }) => {
     const result = await textFormatter.execute(context as Record<string, unknown>)
     return result as { success: boolean; formatted_text: string; format_applied: string }
   }
@@ -81,7 +81,7 @@ const dataExporterMcp = createTool({
     destination: z.string(),
     warning: z.string()
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context }: { context: { data: Record<string, unknown> } }) => {
     const result = await dataExporter.execute(context as Record<string, unknown>)
     return result as { success: boolean; message: string; destination: string; warning: string }
   }
@@ -100,7 +100,7 @@ const healthcareAnalyserMcp = createTool({
     record_count: z.number(),
     phi_processed: z.boolean()
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context }: { context: { records: string[]; analysis_type: string } }) => {
     const result = await healthcareAnalyser.execute(context as Record<string, unknown>)
     return result as { success: boolean; analysis: string; record_count: number; phi_processed: boolean }
   }
@@ -120,7 +120,7 @@ const server = new MCPServer({
 })
 
 export function getToolsWithPecMetadata(): Array<{ name: string; compliance: PecComplianceMetadata }> {
-  return allTools.map(tool => ({
+  return allTools.map((tool: { name: string; compliance: PecComplianceMetadata }) => ({
     name: tool.name,
     compliance: tool.compliance
   }))
