@@ -2,7 +2,7 @@
 
 import { createTool, type ToolAction } from '@mastra/core/tools'
 import { z } from 'zod'
-import { PecComplianceMetadata } from './pec-types'
+import type { PecComplianceMetadata } from '@protocol-embedded-compliance/mastra'
 
 export interface ThirdPartyServer {
   name: string

@@ -16,6 +16,9 @@ importers:
       '@mastra/mcp':
         specifier: ^0.14.5
         version: 0.14.5(@mastra/core@0.24.9(openapi-types@12.1.3)(react@19.2.3)(zod@3.25.76))(@types/json-schema@7.0.15)(hono@4.11.3)(zod@3.25.76)
+      '@protocol-embedded-compliance/mastra':
+        specifier: ^0.1.0
+        version: 0.1.0(@mastra/mcp@0.14.5(@mastra/core@0.24.9(openapi-types@12.1.3)(react@19.2.3)(zod@3.25.76))(@types/json-schema@7.0.15)(hono@4.11.3)(zod@3.25.76))
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -897,6 +900,11 @@ packages:
 
   '@protobufjs/utf8@1.1.0':
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
+
+  '@protocol-embedded-compliance/mastra@0.1.0':
+    resolution: {integrity: sha512-O1C+RDYlU9yEvfEw1LaJpms3jDM/IroOf2dmpraey2ZI7xzML9h6LSMac18KoO1HZSpcyUHUHKm1yUtB+8q1RA==}
+    peerDependencies:
+      '@mastra/mcp': '>=0.14.0'
 
   '@sindresorhus/slugify@2.2.1':
     resolution: {integrity: sha512-MkngSCRZ8JdSOCHRaYd+D01XhvU3Hjy6MGl06zhOk614hp9EOAp5gIkBeQg7wtmxpitU6eAL4kdiRMcJa2dlrw==}
@@ -3012,6 +3020,10 @@ snapshots:
   '@protobufjs/pool@1.1.0': {}
 
   '@protobufjs/utf8@1.1.0': {}
+
+  '@protocol-embedded-compliance/mastra@0.1.0(@mastra/mcp@0.14.5(@mastra/core@0.24.9(openapi-types@12.1.3)(react@19.2.3)(zod@3.25.76))(@types/json-schema@7.0.15)(hono@4.11.3)(zod@3.25.76))':
+    dependencies:
+      '@mastra/mcp': 0.14.5(@mastra/core@0.24.9(openapi-types@12.1.3)(react@19.2.3)(zod@3.25.76))(@types/json-schema@7.0.15)(hono@4.11.3)(zod@3.25.76)
 
   '@sindresorhus/slugify@2.2.1':
     dependencies:

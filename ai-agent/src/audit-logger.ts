@@ -1,14 +1,46 @@
 // ai-agent/src/audit-logger.ts
 
 import { createHash, randomUUID } from 'crypto'
-import {
-  AuditLog,
-  AuditLogEntry,
-  AuditEventType,
+import type {
   PecComplianceMetadata,
   DeploymentContext,
   AiActClassification
-} from './pec-types'
+} from '@protocol-embedded-compliance/mastra'
+
+export type AuditEventType =
+  | 'agent_initialisation'
+  | 'tool_approved'
+  | 'tool_rejected'
+  | 'tool_invocation'
+  | 'tool_invocation_blocked'
+  | 'compliance_warning'
+
+export interface AuditLogEntry {
+  id: string
+  timestamp: string
+  event_type: AuditEventType
+  tool_name: string | null
+  deployment_context: {
+    governing_law: string
+    jurisdiction: string
+    max_risk: AiActClassification
+  }
+  compliance_metadata: PecComplianceMetadata | null
+  evaluation_result: {
+    compliant: boolean
+    reasons: string[]
+    warnings: string[]
+  } | null
+  reasoning_trace: string[]
+  session_id: string
+}
+
+export interface AuditLog {
+  entries: AuditLogEntry[]
+  session_id: string
+  started_at: string
+  deployment_context_hash: string
+}
 
 export class PecAuditLogger {
   private log: AuditLog

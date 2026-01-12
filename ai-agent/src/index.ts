@@ -8,12 +8,27 @@ import { writeFileSync } from 'fs'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 config({ path: resolve(__dirname, '../../.env') })
 
-import { allThirdPartyServers, ThirdPartyServer } from './third-party-servers'
-import { filterCompliantTools } from './compliance-filter'
-import { euDeploymentContext, usHealthcareContext, allDeploymentContexts } from './deployment-context'
-import { DeploymentContext, PecComplianceMetadata } from './pec-types'
+import {
+  PecMCPClient,
+  filterCompliantTools,
+  euGeneralContext,
+  usHealthcareContext,
+  type DeploymentContext,
+  type PecComplianceMetadata
+} from '@protocol-embedded-compliance/mastra'
+
+import { allThirdPartyServers } from './third-party-servers'
 import { initAuditLogger } from './audit-logger'
-import { connectToMcpServer, formatDiscoveredToolsForFiltering, McpServerConnection } from './mcp-client'
+
+interface McpConnection {
+  serverName: string
+  tools: Array<{
+    name: string
+    compliance: PecComplianceMetadata | null
+  }>
+  getCompliantTools: (context: DeploymentContext) => Promise<ReturnType<typeof filterCompliantTools>>
+  disconnect: () => Promise<void>
+}
 
 function runMockServerDemo(contextName: string, context: DeploymentContext) {
   console.log(`\n${'─'.repeat(70)}`)
@@ -57,7 +72,7 @@ function runMockServerDemo(contextName: string, context: DeploymentContext) {
   return { totalCompliant, totalRejected }
 }
 
-async function runRealMcpServerDemo(contextName: string, context: DeploymentContext, connection: McpServerConnection) {
+async function runRealMcpServerDemo(contextName: string, context: DeploymentContext, connection: McpConnection) {
   console.log(`\n${'─'.repeat(70)}`)
   console.log(`  REAL MCP SERVER via stdio (${contextName.toUpperCase()})`)
   console.log(`${'─'.repeat(70)}\n`)
@@ -66,14 +81,14 @@ async function runRealMcpServerDemo(contextName: string, context: DeploymentCont
   console.log(`  Tools discovered: ${connection.tools.length}`)
   console.log()
 
-  const toolsForFiltering = formatDiscoveredToolsForFiltering(connection)
+  const toolsWithMetadata = connection.tools.filter(t => t.compliance !== null)
 
-  if (toolsForFiltering.length === 0) {
+  if (toolsWithMetadata.length === 0) {
     console.log('  ⚠ No tools with PEC metadata found')
     return { totalCompliant: 0, totalRejected: 0 }
   }
 
-  const { compliant, rejected } = filterCompliantTools(toolsForFiltering, context)
+  const { compliant, rejected } = await connection.getCompliantTools(context)
 
   for (const tool of compliant) {
     console.log(`  ✓ ${tool.name}: COMPLIANT`)
@@ -92,7 +107,7 @@ async function runRealMcpServerDemo(contextName: string, context: DeploymentCont
   return { totalCompliant: compliant.length, totalRejected: rejected.length }
 }
 
-async function runDemo(contextName: string, context: DeploymentContext, connection: McpServerConnection) {
+async function runDemo(contextName: string, context: DeploymentContext, connection: McpConnection) {
   console.log(`\n${'═'.repeat(70)}`)
   console.log(`  ${contextName.toUpperCase()} DEPLOYMENT CONTEXT`)
   console.log(`${'═'.repeat(70)}`)
@@ -136,7 +151,7 @@ async function main() {
 ║  • Each declares compliance using the SAME PEC schema                ║
 ║  • ONE filtering implementation works for ALL                        ║
 ║                                                                      ║
-║  The value: Standardisation enables interoperability                 ║
+║  Using: @protocol-embedded-compliance/mastra                         ║
 ╚══════════════════════════════════════════════════════════════════════╝`)
 
   console.log(`
@@ -153,10 +168,32 @@ Third-party servers (mock):
   console.log(`  CONNECTING TO REAL MCP SERVER VIA STDIO...`)
   console.log(`${'═'.repeat(70)}\n`)
 
-  let connection: McpServerConnection
+  const mcpServerPath = resolve(__dirname, '../../mcp-server/src/index.ts')
+
+  let connection: McpConnection
 
   try {
-    connection = await connectToMcpServer()
+    const client = new PecMCPClient({
+      servers: {
+        pecServer: {
+          command: 'npx',
+          args: ['tsx', mcpServerPath]
+        }
+      }
+    })
+
+    const discovery = await client.discoverTools()
+
+    connection = {
+      serverName: 'pec-mcp-server',
+      tools: discovery.all.map(t => ({
+        name: t.name,
+        compliance: t.compliance
+      })),
+      getCompliantTools: (ctx) => client.getCompliantTools(ctx),
+      disconnect: () => client.disconnect()
+    }
+
     console.log(`  ✓ Connected to: ${connection.serverName}`)
     console.log(`  ✓ Discovered ${connection.tools.length} tools with PEC metadata\n`)
 
@@ -175,11 +212,12 @@ Third-party servers (mock):
     connection = {
       serverName: 'pec-mcp-server (offline)',
       tools: [],
+      getCompliantTools: async () => ({ compliant: [], rejected: [] }),
       disconnect: async () => {}
     }
   }
 
-  await runDemo('eu-general', euDeploymentContext, connection)
+  await runDemo('eu-general', euGeneralContext, connection)
   await runDemo('us-healthcare', usHealthcareContext, connection)
 
   try {
